@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考官评分系统</title>
+    <style>
+        /* 简单的样式 */
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+
+        }
+
+        .spanFather {
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        span.title {
+            font-weight: bold;
+        }
+
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .player-info {
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 24px;
+            color: red;
+            margin-top: 10px;
+        }
+
+        .scores {
+            margin-top: 20px;
+        }
+
+        .alert {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+<body>
+    <div class="container">
+        <div class="spanFather"><span class="title">考场记分系统</span></div>
+
+        <div class="player-info">
+            <p>第{{id1+1}}个考生 共有{{StudentInformationa.length}}个考生</p>
+            <p>当前考生面试序号: <span id="player-number">{{StudentInformationa[id1].id}}</span></p>
+            <button @click="id1--" :disabled="id1==0">上一个考生</button>
+            <button @click="nextStudent()" :disabled="id1==11">下一个考生</button>
+            <p>考点: <span id="player-number">{{group}}</span></p>
+            <p>记分员序列号: <span id="player-number">{{Marker.id}}</span></p>
+            <img src="path/to/photo.jpg" alt="考生照片" width="150">
+        </div>
+        <!-- score -->
+        <!-- <div class="timer" id="timer">
+            答题倒计时: <span id="countdown">{{time}}</span>
+            <button @click="beginCountDown">开始计时</button>
+            <button @click="closeCountDown">结束计时</button>
+        </div> -->
+
+        <div class="scores">
+            <h2>考官评分</h2>
+            <div id="scores-list">
+                <div v-if="index === 0" class="InterviewerInformation" v-for="(item,index) in InterviewerInformationa" :key="index">
+                    <span>{{item.name }}:</span>
+                    <span>{{scores[id1][index]}}</span>
+                    <button @click="changeGrade(id1,index)">修改</button>
+                </div>
+
+                <div>合成分数:{{averageScore}}</div>
+            </div>
+            <div class="alert" id="alert-message"></div>
+        </div>
+
+        <button @click="submitScores">提交最终分数</button>
+        <button @click="printScoreSheet">打印成绩单</button>
+        <button @click="history">查看历史成绩</button>
+        <div v-if="w" class="w"></div>
+
+        <div v-if=isdisplay class="alert"> 请输入修改后的成绩
+            <input type="text" v-model="grade">
+            <button @click="confirmGrade()">确认</button>
+        </div>
+
+    </div>
+
+    <script>
+        let vue = new Vue({
+            el: '.container',
+            data: {
+                interval: null,
+                time: '05:00',
+                examId: '',
+
+                id1: 0,
+                id2: 0,
+                grade: 0,
+                isdisplay: false,
+                index: 0,
+                w:true
+
+                //
+            },
+            methods: {
+                history()
+                {
+                    
+                    if(document.querySelector('div.w').innerHTML =='')
+                    document.querySelector('div.w').innerHTML=`82 71 75 79`
+                    else{
+                        document.querySelector('div.w').innerHTML = ''
+                    }
+                    
+                },
+                confirmGrade() {
+                    // this.isis = 1;
+                    // this.changeGrade(this.id1, this.index); // 传递 id 和 index 参数
+                    //    this.scores[this.id1][this.index] = this.grade;
+                    Vue.set(this.scores[this.id1], this.index, this.grade)
+                    this.$set(this.scores[this.id1], Number(this.index), Number(this.grade));
+                    this.grade = 0;
+                    // console.log(this.grade);
+                    // console.log( this.scores[this.id1][this.index]);
+                    // console.log(this.scores);
+                    localStorage.setItem('Scores', JSON.stringify(this.scores))
+                    this.isdisplay = false
+
+
+                },
+                changeGrade(id1, index) {
+                    this.isdisplay = true
+                    this.index = index;
+                    this.id1 = id1;
+                    this.grade = Number(this.scores[this.id1][this.index])
+                    // console.log(this.isis);
+
+
+
+                    // this.isdisplay = false;  // 隐藏输入框
+                    // this.isis = 0;  // 重置 isis
+
+                },
+                //       confirmGrade() {
+                //         // 更新成绩
+                //         Vue.set(this.scores[this.id1], this.index, this.grade);
+
+                //         // 更新对应的成绩显示
+
+
+                //         // 清空输入框
+                //         this.grade = 0; // 或者使用 this.grade = '';
+
+                //         // 更新 localStorage
+                //         localStorage.setItem('Scores', JSON.stringify(this.scores));
+                //     },
+                //     changeGrade(id1, index) {
+                //         this.isdisplay = true;
+                //         this.index = index;
+                //         this.id1 = id1;
+
+                //         // 将当前成绩赋值给输入框，以便于修改
+                //         this.grade = this.scores[this.id1][this.index];
+                //     },
+                //     // 其余方法...
+                // }
+
+
+
+
+
+                nextStudent() {
+                    this.id1++
+                    // console.log(this.getRandomNumbers());
+
+
+                }
+
+
+
+                , getAverage(arr) {
+                    if (arr.length !== 5) {
+                        return "数组长度必须为5";
+                    }
+
+                    // 复制数组，避免修改原数组
+                    let newArr = [...arr];
+
+                    // 找到最大值和最小值的索引
+                    let max = Math.max(...newArr);
+                    let min = Math.min(...newArr);
+
+                    // 去掉一个最大值和一个最小值
+                    newArr.splice(newArr.indexOf(max), 1);
+                    newArr.splice(newArr.indexOf(min), 1);
+
+                    // 计算剩下三个数的平均值
+                    let sum = newArr.reduce((acc, curr) => acc + curr, 0);
+                    let average = sum / newArr.length;
+
+                    return average;
+                },
+
+
+
+
+                beginCountDown() {
+                    console.log('开始倒计时');
+                    this.CountDown();
+                    // console.log(this.StudentInformationa);
+
+                },
+                closeCountDown() {
+                    console.log('关闭倒计时');
+                    clearInterval(this.interval);
+                    this.time = '05:00';
+                    // console.log(this.time);
+                },
+                CountDown() {
+                    let countdown = 5 * 60;
+                    this.interval = setInterval(() => {
+                        let minutes = Math.floor(countdown / 60);
+                        let seconds = countdown % 60;
+                        this.time = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        countdown--;
+                        if (countdown < 0) {
+                            clearInterval(this.interval);
+                            alert('答题时间结束！');
+                        }
+                    }, 1000);
+                },
+                submitScores() {
+                    // 处理提交分数的逻辑
+                    console.log(this.StudentInformationa[this.id1]);
+
+
+                    console.log(this.StudentInformationa[this.id1].gradeTwo);
+                    let currentId = this.StudentInformationa[this.id1].id - 1
+                    this.StudentInformation[currentId].gradeTwo = this.averageScore
+
+                    localStorage.setItem('StudentInformation', JSON.stringify(this.StudentInformation))
+                    // this.StudentInformationa[this.id1].gradeTwo= this.averageScore
+
+
+                },
+                printScoreSheet() {
+                    // 处理打印成绩单的逻辑
+                    window.print()
+                },
+                previous() {
+                    // 处理上一个的逻辑
+                    console.log('上一个');
+                },
+                next() {
+                    // 处理下一个的逻辑
+                    console.log('下一个');
+                }
+            },
+            computed: {
+                //返回一个随机数组，数值为60-90
+                scores() {
+                    let score = []
+                    // console.log(this.getRandomNumbers());
+                    score = JSON.parse(localStorage.getItem('Scores'))
+
+                    // for (let i = 0; i <12; i++) {
+                    //     // console.log(this.getRandomNumbers());
+
+                    //     // for (let i = 0; i < 12; i++) {
+
+                    //         score.push([70, 70, 70, 70, 70])
+                    //     // }
+                    // //    score.push(this.getRandomNumbers())
+                    //     // console.log(score[i]);
+
+                    // }
+                    console.log(score);
+
+                    return score
+
+                },
+                averageScore() {
+                    console.log();
+                    return this.getAverage(this.scores[this.id1]).toFixed(2)
+
+
+                },
+                Marker() {
+                    let currentMarker = ''
+                    let Markers = JSON.parse(localStorage.getItem('MarkerInformation'))
+                    for (let i = 0; i < Markers.length; i++) {
+                        if (Markers[i].group == this.group) {
+                            currentMarker = Markers[i]
+                        }
+
+                    }
+                    // console.log(Markers);
+                    // console.log(currentMarker);
+
+
+                    return currentMarker
+
+
+                },
+
+                //这个是当前考点的面试官列表
+                InterviewerInformationa() {
+                    let arr = [];
+                    for (let i = 0; i < this.InterviewerInformation.length; i++) {
+                        if (this.InterviewerInformation[i].group == this.group) {
+                            arr.push(this.InterviewerInformation[i]);
+
+                        }
+                    }
+                    console.log(this.group);
+
+                    // console.log(arr);
+
+                    return arr;
+                },
+                //这个是面试官的列表
+                InterviewerInformation() {
+                    let Interviewer = JSON.parse(localStorage.getItem('InterviewerInformation'));
+
+                    return Interviewer;
+                },
+                //这个是考生的列表
+                StudentInformation() {
+                    let Students = JSON.parse(localStorage.getItem('StudentInformation'));
+
+                    // console.log(Students);
+
+                    return Students;
+                }
+                ,
+                // 当组考生的名单
+                StudentInformationa() {
+                    let arr = [];
+                    for (let i = 0; i < this.StudentInformation.length; i++) {
+                        if (this.StudentInformation[i].group == this.group) {
+                            arr.push(this.StudentInformation[i]);
+                        }
+
+
+                    }
+                    console.log(arr);
+                    return arr;
+                },
+                // 当前的小组数
+                group() {
+                    let localGroup = JSON.parse(localStorage.getItem('currentGroup2'))
+                    // console.log(localGroup);
+
+                    return localGroup
+                },
+            }
+        });
+    </script>
+</body>
+
+</html>

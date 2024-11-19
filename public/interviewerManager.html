@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考官管理</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+
+        td.first-td {
+            width: 20px
+        }
+
+        td.forth-td {
+            width: 30px;
+        }
+
+        td.two-td {
+            width: 50px;
+        }
+
+        thead {
+            position: sticky;
+            top: 0;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            text-align: left;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        #student-list {
+            max-height: 300px;
+            /* 设置列表的最大高度 */
+            overflow-y: auto;
+            /* 允许在y轴上滚动 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            padding: 15px;
+            border-bottom: 1px solid #444;
+            color: white;
+            cursor: pointer;
+        }
+
+        .sidebar li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+        }
+
+        .sidebar li.selected a {
+            color: red;
+
+            /* Only the text inside <a> will change color */
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        /* 右边的主要内容开始 */
+        .main-div {
+            background-color: #f2f2f2;
+            height: 500px;
+            width: 100%;
+            /* position: relative; */
+
+        }
+
+        .one {
+            /* background-color:skyblue ; */
+            height: 100%;
+            max-height: 500px;
+            overflow-y: auto;
+
+        }
+
+        .two {
+            height: 100%;
+            max-height: 500px;
+            overflow-y: auto;
+
+        }
+
+        .three {
+            position: relative;
+        }
+
+        .print {
+            position: absolute;
+            left: 50%;
+            top: 30%;
+
+        }
+        /* 弹窗里面的样式 */
+           .popup {  
+    display: none;  
+    position: fixed;  
+    z-index: 1;  
+    left: 0;  
+    top: 0;  
+    width: 100%;  
+    height: 100%;  
+    overflow: auto;  
+    background-color: rgba(0, 0, 0, 0.5);  
+}  
+  
+.popup-content {  
+    background-color: #fefefe;  
+    margin: 15% auto;  
+    padding: 20px;  
+    border: 1px solid #888;  
+    width: 80%;  
+    max-width: 600px;  
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);  
+    position: relative;  
+}  
+  
+.close-btn {  
+    color: #aaa;  
+    float: right;  
+    font-size: 28px;  
+    font-weight: bold;  
+    cursor: pointer;  
+}  
+  
+.close-btn:hover,  
+.close-btn:focus {  
+    color: black;  
+    text-decoration: none;  
+    cursor: pointer;  
+}
+
+        /* 弹窗样式结束 */
+    </style>
+</head>
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<body>
+    <div class="all">
+        <div class="sidebar">
+            <ul>
+                <li :class="{'menu-item':true }" data-content="面试模式" v-for="(item,index) in leftList" :key=index+1
+                    @click="changeKey(index)">
+                    <a href="#">{{item.content}}</a>
+                </li>
+                <!-- <li class="menu-item" data-content="面试模式">
+                <a href="#">面试模式</a>
+            </li>
+            <li class="menu-item" data-content="面试规则">
+                <a href="#">面试规则</a>
+            </li>
+            <li class="menu-item" data-content="面试时间">
+                <a href="#">面试时间</a>
+            </li>
+            <li class="menu-item" data-content="考点 考场">
+                <a href="#">考点 考场</a>
+            </li>
+            <li class="menu-item" data-content="招考职位">
+                <a href="#">招考职位</a>
+            </li>
+            <li class="menu-item" data-content="考生信息">
+                <a href="#">考生信息</a>
+            </li>
+            <li class="menu-item" data-content="分配考场">
+                <a href="#">分配考场</a>
+            </li>
+            <li class="menu-item" data-content="考官信息">
+                <a href="#">考官信息</a>
+            </li>
+            <li class="menu-item" data-content="考官组成规则">
+                <a href="#">考官组成规则</a>
+            </li>
+            <li class="menu-item" data-content="抽签规则">
+                <a href="#">抽签规则</a>
+            </li>
+            <li class="menu-item" data-content="成绩合成公式">
+                <a href="#">成绩合成公式</a>
+            </li> -->
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <!-- 这里可以放置与侧边栏项目对应的主要内容 -->
+            <div class="main-div">
+                <div class="one" v-if=" key=='1'">
+
+                    <div class="div-student">
+                        <h2>考官信息表</h2>
+                        <button class="addStudent" @click="addStudent()">新增考官信息</button>
+                        <!-- 新增学生信息的边框 -->
+                        <div id="popup" class="popup">
+                            <div class="popup-content">
+                                <span class="close-btn" id="closePopupBtn" @click="closeAddStudent()">&times;</span>
+                                <h2>请输入新增的考官信息</h2>
+                                <form id="inputForm">
+                                    <!-- id:'',group:'',isexam:'否', name:'jack',age:'18',target:'教育局',gradeOne:'70',gradeTwo:'0',img:'' -->
+                                    <label for="name">小组</label>
+                                    <input type="text" id="group" name="name" autocomplete="off"><br><br>
+                                    <label for="name">唯一标识</label>
+                                    <input type="text" id="id" name="name" disabled :value="this.Length" autocomplete="off"><br><br>
+                                    
+                                    <label for="phone">姓名&nbsp;&nbsp;</label>
+                                    <input type="tel" id="name" name="phone" autocomplete="off"><br><br>
+                                    <label for="phone">性别&nbsp;&nbsp;</label>
+                                    <input type="tel" id="sex" name="phone" autocomplete="off"><br><br>
+                                  
+                                    
+                                   
+                                    <label for="phone">图片&nbsp;&nbsp;</label>
+                                    <input type="tel" id="img" name="phone" autocomplete="off"><br><br>
+                                    <button type="submit" @click.prevent="submitAddStudent()" class="closeAddStudent">提交</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>抽签分组</th>
+                                    <th>唯一标识</th>
+                                   
+                                    <th>姓名</th>
+                                    <th>年龄</th>
+                                   
+                                    <th>图片</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-list" v-for="(item,index) in StudentInformation">
+                                <!-- 学生信息行将插入到这里 -->
+                                <tr style="page-break-before:auto">
+                                    <td class="first-td">{{item.group}}</td>
+                                    <td class="first-td">{{item.id}}</td>
+                                   
+                                    <td>{{item.name}}</td>
+                                    <td>{{item.age}}</td>
+                                    
+                                    <td>{{item.img}}</td>
+
+                                </tr>
+
+                                <!-- 可以根据需要添加更多学生信息行 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+
+
+
+
+
+
+
+                </div>
+                <div class="two" v-if="key=='2'">
+                    <div class="div-student">
+                        <h2>考官信息表</h2>
+                        <button @click="random(145)">开始抽签</button>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>抽签分组</th>
+                                    
+                                    <th>唯一标识</th>
+                                    <th>姓名</th>
+                                    <th>年龄</th>
+                                   
+                                    <th>图片</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-list" v-for="(item,index) in StudentInformation">
+                                <!-- 学生信息行将插入到这里 -->
+                                <tr>
+                                    <td class="first-td">{{item.group}}</td>
+                                    
+                                    <td>{{item.id}}</td>
+                                    <td>{{item.name}}</td>
+                                    <td>{{item.age}}</td>
+                                    
+                                    <td>{{item.img}}</td>
+
+                                </tr>
+
+                                <!-- 可以根据需要添加更多学生信息行 -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+                <div class="three " v-if="key =='3'">
+                    <div class="div-student">
+                        <h2>考官信息表</h2>
+                        <button @click="printPage()">打印</button>
+                    
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>抽签分组</th>
+                    
+                                    <th>唯一标识</th>
+                                    <th>姓名</th>
+                                    <th>年龄</th>
+                    
+                                    <th>图片</th>
+                                </tr>
+                            </thead>
+                            <tbody id="student-list" v-for="(item,index) in StudentInformation">
+                                <!-- 学生信息行将插入到这里 -->
+                                <tr>
+                                    <td class="first-td">{{item.group}}</td>
+                    
+                                    <td>{{item.id}}</td>
+                                    <td>{{item.name}}</td>
+                                    <td>{{item.age}}</td>
+                    
+                                    <td>{{item.img}}</td>
+                    
+                                </tr>
+                    
+                                <!-- 可以根据需要添加更多学生信息行 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- <button class="print" @click="printPage()">打印</button> -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+     
+
+
+        let v = new Vue(
+            {
+                el: '.all',
+                data: {
+                    leftList: [
+                        { content: '考官基本信息' },
+                        { content: '抽签规则' },
+                        { content: '相关打印' },
+                        { content: '返回面试管理系统' },
+
+
+
+
+
+
+
+                    ],
+                    key: '',
+                    Length: '',
+
+
+
+
+
+
+
+
+
+                },mounted()
+                {
+                    this.changeKey(0)
+                },
+                methods: {
+                    changeKey(id) {
+                         if (id == 3) {
+                            location.href = 'ManageSystem.html'
+                        }
+                        this.key = id + 1
+                        console.log(this.Length);
+
+                        console.log(this.key);
+                          this.$forceUpdate()
+
+                    },
+          
+                    random(numGroups) {
+                        console.log(this.length);
+                        let numStudents = this.Length
+                        // 创建一个包含所有学生ID的数组（这里用数字1到100代表学生）  
+                        let students = Array.from({ length: numStudents }, (_, i) => i);
+
+                        // 打乱学生数组的顺序  
+                        for (let i = students.length - 1; i > 0; i--) {
+                            const j = Math.floor(Math.random() * (i + 1));
+                            [students[i], students[j]] = [students[j], students[i]]; // 交换元素  
+                        }
+
+                        // 初始化一个空数组来存储分组结果  
+                        let groups = Array.from({ length: numGroups }, () => []);
+
+                        // 将打乱后的学生分配到各个组中  
+                        for (let i = 0; i < students.length; i++) {
+                            groups[i % numGroups].push(students[i]);
+                        }
+                        console.log(groups);
+                        for (let i = 0; i < groups.length; i++) {
+                            //0 1
+                            for (let index = 0; index < groups[i].length; index++) {
+                                this.StudentInformation[groups[i][index]].group = i
+                            }
+                        }
+                      
+                        
+
+                        localStorage.setItem('InterviewerInformation', JSON.stringify(this.StudentInformation))
+                        this.$forceUpdate()
+
+
+                        return groups;
+
+
+
+                        // 输出分组结果  
+
+                    },
+                    printPage() {
+                        window.print()
+
+
+                    },
+                    addStudent() {
+                        let popuo = document.querySelector('.popua')
+                        popup.style.display = 'block'
+
+
+
+
+                    },
+                    closeAddStudent() {
+                        let popuo = document.querySelector('.popua')
+                        popup.style.display = 'none'
+
+
+                    },
+                    submitAddStudent() {
+                        //    <form id="inputForm">
+                        //             <!-- id:'',group:'',isexam:'否', name:'jack',age:'18',target:'教育局',gradeOne:'70',gradeTwo:'0',img:'' -->
+                        //         <label for="name">小组</label>
+                        //         <input type="text" id="group" name="name" autocomplete="off"><br><br>
+                        //             <label for="name">唯一标识</label>
+                        //             <input type="text" id="id" name="name" disabled:value="this.Length" autocomplete="off"><br><br>
+                        //                 <label for="email">缺考标记</label>
+                        //                 <input type="email" id="isExam" name="email" autocomplete="off"><br><br>
+                        //                     <label for="phone">姓名&nbsp;&nbsp;</label>
+                        //                     <input type="tel" id="name" name="phone" autocomplete="off"><br><br>
+                        //                         <label for="phone">年龄&nbsp;&nbsp;</label>
+                        //                         <input type="tel" id="age" name="phone" autocomplete="off"><br><br>
+                        //                             <label for="phone">目标职位</label>
+                        //                             <input type="tel" id="target" name="phone" autocomplete="off"><br><br>
+                        //                                 <label for="phone">笔试成绩</label>
+                        //                                 <input type="tel" id="gradeOne" name="phone" autocomplete="off"><br><br>
+                        //                                     <label for="phone">面试成绩</label>
+                        //                                     <input type="tel" id="gradeTwo" name="phone" autocomplete="off"><br><br>
+                        //                                         <label for="phone">图片&nbsp;&nbsp;</label>
+                        //                                         <input type="tel" id="img" name="phone" autocomplete="off"><br><br>
+                        //                                             <button type="submit" @click="submitAddStudent()" class="closeAddStudent">提交</button>
+                        //                                          </form>
+
+                        let name = document.querySelector('#name').value
+                        let group = document.querySelector('#group').value
+                        let id = document.querySelector('#id').value
+                        let sex = document.querySelector('#sex').value
+                       
+                
+                     
+                     
+                      
+                        // console.log(name, group, id, isExam);
+                        //把信息做成列表
+                        let arr = {id: id, name: name, gender:sex, group: group
+                    }
+
+                      this.StudentInformation.push(arr)
+
+                        localStorage.setItem('StudentInformation', JSON.stringify(this.StudentInformation))
+                        console.log(this.StudentInformation);
+
+                        this.Length = this.StudentInformation.length
+
+
+
+
+
+
+
+
+
+                        this.closeAddStudent()
+                    }
+
+                    
+
+                },
+                computed: {
+                    StudentInformation() {
+                        let Interviewer = JSON.parse(localStorage.getItem('InterviewerInformation'))
+                        this.Length = Interviewer.length
+                        
+                        
+                        return Interviewer
+
+                    },
+               
+                  
+
+
+
+                }
+            }
+        )
+
+
+
+
+
+
+
+
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const menuItems = document.querySelectorAll('.menu-item');
+
+            menuItems.forEach(function (item) {
+                item.addEventListener('click', function (event) {
+                    // 移除所有菜单项的.selected类  
+                    menuItems.forEach(function (otherItem) {
+                        otherItem.classList.remove('selected');
+                    });
+
+                    // 给当前点击的菜单项添加.selected类  
+                    item.classList.add('selected');
+
+                    // 阻止链接的默认行为（如果需要的话）  
+                    // event.preventDefault();
+
+                    // 这里可以添加其他逻辑，比如根据点击的项目加载不同的内容到.main-content区域  
+                    // const selectedContent = item.getAttribute('data-content');  
+                    // console.log(selectedContent); // 输出被点击的项目内容，用于调试或进一步处理  
+                });
+            });
+        });  
+    </script>
+
+</body>
+
+</html>

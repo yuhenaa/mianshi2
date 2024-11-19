@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>面试考录工作侧边栏</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100%;
+            background-color: #333;
+            position: fixed;
+            top: 0;
+            left: 0;
+            overflow-y: auto;
+            padding-top: 20px;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar li {
+            padding: 15px;
+            border-bottom: 1px solid #444;
+            color: white;
+            cursor: pointer;
+        }
+
+        .sidebar li a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar li.selected a {
+            color: red;
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 20px;
+            background-color: #fff;
+        }
+
+        .main-div {
+            background-color: rgb(190, 193, 188);
+            height: 500px;
+            position: relative;
+        }
+
+        .main-content-textarea {
+            background-color: rgb(190, 193, 188);
+            width: 100%;
+            height: 100%;
+            font-size: 20px;
+        }
+           .main-div iframe {
+            width: 100%;
+            height: 100%;
+            border: none; /* 隐藏边框 */
+        }
+
+        .main-div button {
+            position: absolute;
+            bottom: 10px;
+        }
+
+        .main-div-button1 {
+            right: 10px;
+        }
+
+        .main-div-button2 {
+            right: 60px;
+        }
+
+        .main-div-button3 {
+            right: 110px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div class="sidebar">
+            <ul>
+                <li :class="{'selected': index === selectedIndex}" v-for="(item, index) in menuItems" :key="item.id"
+                    @click="handleMenuClick(index)">
+                    <a href="#">{{ item.name }}</a>
+                </li>
+            </ul>
+        </div>
+
+        <div class="main-content">
+            <div class="main-div">
+                <textarea v-if="!showIframe"   :disabled="textareaDisable" v-model="currentContent" class="main-content-textarea" display="block"></textarea>
+                <iframe title="ok" v-if="showIframe" src="02.（发布）黑龙江省2025年度定向招录选调生岗位计划表（省直）.pdf"></iframe>
+                <button class="main-div-button1" @click="editContent">修改</button>
+                <button class="main-div-button2" @click="saveContent">保存</button>
+                <!-- <button class="main-div-button3" @click="resetContent">重置信息</button> -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: {
+                menuItems: [
+                    { id: 1, name: '返回登录界面' },
+                    { id: 2, name: '面试模式' },
+                    { id: 3, name: '面试规则' },
+                    { id: 4, name: '面试时间' },
+                    { id: 5, name: '考点考场' },
+                    { id: 6, name: '招考职位' },
+                    { id: 7, name: '考生信息' },
+                    { id: 8, name: '分配考场' },
+                    { id: 9, name: '考官信息' },
+                    { id: 10, name: '考官组成规则' },
+                    { id: 11, name: '抽签规则' },
+                    { id: 12, name: '成绩合成公式' },
+                ],
+                
+                selectedIndex: 1,
+                currentContent: '',
+                textareaDisable:true,
+                showIframe:false
+            },
+            mounted() {
+                this.currentContent = this.mainContent[this.selectedIndex].content;
+            },
+            methods: {
+                handleMenuClick(index) {
+                    this.selectedIndex = index;
+                    if(index==0)
+                {
+                    window.location.href='login.html'
+                }
+                if(index==5)
+                {
+                   this.showIframe=true
+
+                  
+                   
+                }
+                    if (index === 6) {
+                        window.location.href = 'StudentManage.html';
+                    } else if (index === 8) {
+                        window.location.href = 'InterviewerManager.html';
+                    } else if(index ==7)
+                    {
+                        window.location.href='StudentManage.html'
+                    }
+
+                    
+                    else {
+                        this.currentContent = this.mainContent[index].content;
+                    }
+                },
+                //
+                editContent() {
+                    this.textareaDisable = false;
+                },
+                //保存修改的数据
+                saveContent() {
+                   this.textareaDisable = true;
+                    this.mainContent[this.selectedIndex].content = this.currentContent;
+                    localStorage.setItem('mainContent', JSON.stringify(this.mainContent));
+                    
+                },
+                // resetContent() {
+
+                   
+
+                //     location.reload();
+                // }
+            },
+            computed:{
+                //读取本地的mainContent数据，
+                mainContent()
+                {
+
+                    let localMainContent=JSON.parse(localStorage.getItem('mainContent'))
+
+
+
+                    return localMainContent
+
+                }
+
+
+            }
+        });
+    </script>
+</body>
+
+</html>

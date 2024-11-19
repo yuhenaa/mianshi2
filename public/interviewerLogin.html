@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>考官管理系统 - 登录</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+
+<body>
+    <div class="login-container">
+        <h2>考官评分系统</h2>
+        <form action="/login" method="POST">
+            <div class="input-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" v-model="username" required Autocomplete="off">
+            </div>
+            <div class="input-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" v-model="password" required>
+            </div>
+            <div class="input-group">
+                <label for="captcha">验证码</label>
+                <input type="text" id="captcha" name="captcha" v-model="userCode" required>
+                <label for="captcha">考点</label>
+                <input type="text" id="captcha" name="group" v-model="currentGroup2" required>
+                <span class="captcha-span">{{Code}} </span>
+                <a href="#" class="refresh-captcha" @click="generateRandomCode()">显示验证码</a>
+            </div>
+            <button @click.prevent="" type="submit"><a class="Alogin" @click.prevent="login">登录</a></button>
+            <!-- <p class="forgot-password">忘记密码？<a href="/forgot-password">点击这里重置</a></p> -->
+        </form>
+        <!-- <p>没有账号？<a href="/register">注册</a></p> -->
+        <p>友情链接<a href="/register"></a></p>
+        <p><a href="login.html">面试管理系统</a></p>
+        <p><a href="markerLogin.html">记分员登陆系统</a></p>
+    </div>
+</body>
+<script>
+
+
+
+
+
+
+
+    new Vue({
+        el: '.login-container',
+        data: {
+            pig: 10,
+            username: '',
+            password: '',
+            Code: '',
+            userCode: '',
+            currentGroup2:''
+        },
+
+        methods: {
+             login() {
+                let ManagerPassword = JSON.parse(localStorage.getItem('InterviewerAccount'));
+
+                if (!ManagerPassword || !ManagerPassword[0]) {
+                    alert('未找到用户数据，请检查本地存储数据');
+                    return;
+                }
+                console.log(this.currentGroup2);
+                
+              let localName = ManagerPassword[Number(this.currentGroup2) - 1].username
+                let localWord = ManagerPassword[Number(this.currentGroup2) - 1].password
+
+                if (this.username !== localName || this.password !== localWord || this.userCode !== this.Code) {
+                    let message = '';
+                    if (this.username !== localName) message += '用户名错误\n';
+                    if (this.password !== localWord) message += '密码错误\n';
+                    if (this.userCode !== this.Code) message += '验证码错误\n';
+                    alert(message.trim());  // 显示单个警告框，汇总所有错误信息
+                } else {
+                    alert('登陆成功');
+                    console.log('登陆成功');
+                     localStorage.setItem('currentGroup2', JSON.stringify(this.currentGroup2))
+                    // 跳转到管理系统
+                    window.location.href = 'interview.html';
+                }
+            },
+            generateRandomCode() {
+                const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                const numbers = '0123456789';
+                let result = '';
+
+                // 生成两个大写字母  
+                for (let i = 0; i < 2; i++) {
+                    const randomLetterIndex = Math.floor(Math.random() * letters.length);
+                    result += letters[randomLetterIndex];
+                }
+
+                // 生成三个数字  
+                for (let i = 0; i < 3; i++) {
+                    const randomNumberIndex = Math.floor(Math.random() * numbers.length);
+                    result += numbers[randomNumberIndex];
+                }
+
+                // 打乱顺序  
+                result = result.split('').sort(() => Math.random() - 0.5).join('');
+                this.Code = result
+                document.querySelector('.refresh-captcha').innerHTML = '刷新验证码'
+                return result;
+            }
+        }
+    })
+</script>
+<style>
+    .Alogin {
+        text-decoration: none;
+        color: inherit;
+        /* 或者指定一个颜色 */
+        outline: none;
+    }
+
+    .Alogin:hover,
+    .Alogin:focus,
+    .Alogine:active {
+        text-decoration: none;
+        color: inherit;
+        /* 或者指定一个颜色 */
+        outline: none;
+    }
+
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f0f2f5;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+    }
+
+    .login-container {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: 350px;
+        /* 稍微增宽以适应验证码 */
+        text-align: center;
+    }
+
+    .login-container h2 {
+        margin-bottom: 20px;
+        color: #333;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+        text-align: left;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        color: #555;
+    }
+
+    .input-group input {
+        width: calc(100% - 40px);
+        /* 留出空间给验证码图片和刷新链接 */
+        padding: 8px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+    }
+
+    .captcha-span {
+        display: inline-block;
+        margin-left: 10px;
+        vertical-align: middle;
+        cursor: pointer;
+        /* 允许点击图片刷新验证码（尽管有刷新链接） */
+    }
+
+    .refresh-captcha {
+        display: inline-block;
+        margin-left: 10px;
+        vertical-align: middle;
+        color: #4CAF50;
+        text-decoration: none;
+    }
+
+    .refresh-captcha:hover {
+        text-decoration: underline;
+    }
+
+    button {
+        width: 100%;
+        padding: 10px;
+        background-color: red;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    button:hover {
+        background-color: red;
+    }
+
+    p.forgot-password {
+        margin-top: 10px;
+        color: #666;
+        text-align: left;
+        /* 与表单其他部分对齐 */
+    }
+
+    p.forgot-password a {
+        color: #4CAF50;
+        text-decoration: none;
+    }
+
+    p.forgot-password a:hover {
+        text-decoration: underline;
+    }
+
+    /* 额外的样式，确保注册链接仍然居中 */
+    .login-container p:last-child {
+        text-align: center;
+        margin-top: 20px;
+    }
+</style>
+
+</html>
